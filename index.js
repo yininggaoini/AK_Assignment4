@@ -1,9 +1,5 @@
 const http = require("http");
-const querystring = require('querystring');
 const fs = require('fs');
-
-var nameArr = [];
-var posts;
 
 var welcomepage = `<html>
     <head><title>Welcome Page</title></head>
@@ -42,6 +38,13 @@ var playerList = `<html>
     <p> PS: Bitte nochmal Button clicken, nachdem Sie es wirklich loeschen wollen.</p>
     </body></html>`;
     
+
+//var {welcomepage,creatplayer,playerList} = require("./index.html");
+
+var nameArr = [];
+var posts;
+
+
 const server = http.createServer((req,res) => {
 
     const methode = req.method;
