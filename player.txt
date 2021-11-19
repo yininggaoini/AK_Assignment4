@@ -1,5 +1,2 @@
-{
-    "Game's Name": "snack game"
-}{
-    "Game's Name": "bsd"
-}
+abc
+234

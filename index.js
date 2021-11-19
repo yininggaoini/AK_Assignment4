@@ -2,11 +2,15 @@ const http = require("http");
 const querystring = require('querystring');
 const fs = require('fs');
 
+
+var nameArr = [];
+var posts;
+
 var welcomepage = `<html>
     <head><title>Welcome Page</title></head>
     <body>
     <h3>Please enter a player's Name.</h3>
-    <form action="../creat-player" method="post">
+    <form action="../create-player" method="post">
         <input type="text" name="playerName" />
         <input type="submit" />
     </form>
@@ -31,11 +35,15 @@ var playerList = `<html>
     </br>
     <form action="../player" method="post">
         <input type="text" name="delectName" />
-        <input type="button" value="delect"/>
+        <input type="submit" value="delect"/>
     </form>
+    <ul>
+        PLAYERLIST
+    </ul>
     </body></html>`;
-
+    
 const server = http.createServer((req,res) => {
+
 
     const methode = req.method;
     const thisUrl = req.url;
@@ -50,24 +58,27 @@ const server = http.createServer((req,res) => {
     }
 
 
-    if(path === '/creat-player'){
+    if(path === '/create-player'){
+        
         var postData = '';
+
         req.on('data',chunks => {
             postData += chunks.toString();
+            // console.log('Before replace:'+ postData);
+            if(postData.indexOf('playerName='&&'=')!=-1){
+                postData = postData.replace('playerName=','');
+                postData = postData.replace('+',' ');
+                // console.log('After replace:' +postData);
+            }
+           nameArr.push(postData);
+           postData = '';
+           posts = nameArr.join('\n');
         });
 
         req.on('end',function(){
-            postData = querystring.parse(postData);
 
-            posts = postData.playerName;
-            postsObj = {"Game's Name": posts};
-            let str = JSON.stringify(postsObj,null,4);
-            console.log(postData);
-            fs.appendFileSync("player.txt", str ,function(err){
-                if(err){
-                   return console.log(err);
-                }
-            });
+            //console.log('...' + posts);
+            fs.writeFileSync("player.txt", posts);
             res.end(creatplayer);
         });
 
@@ -75,18 +86,58 @@ const server = http.createServer((req,res) => {
     }
 
     if( path === '/player'){
-        show = fs.readFileSync("player.txt",'utf8', function(err,files){
-            var delect = files.replace(delectName,"");
-            fs.writeFileSync("player.txt",delect,'utf8', function(err,files){
+       
+        const names = fs.readFileSync("player.txt",'utf8').split('\n');
+        let replace = '';
+        var delectData = '';
 
-                if(err){
-                   return console.log(err);
-                }
+        req.on('data',chunks => {
+            delectData += chunks.toString();
+            console.log('Before replace:'+ delectData);
 
-            })
+            if(delectData.indexOf('delectName='&&'=')!=-1){
+                delectData = delectData.replace('delectName=','');
+                delectData = delectData.replace('+',' ');
+                console.log('After replace:' +delectData);
+            }
+
+            
         });
-        let jsonstr = JSON.stringify(show,"","\t");
-        return res.end(playerList + jsonstr);
+
+        req.on('end',function(){
+
+            names.map((val, i)=>{
+                for(let len=0;len<names.length;len++){
+                    if(val === delectData){
+                        names.splice(i,1);
+                        console.log(names);
+                    }
+                }
+            
+            });
+            delect = names.join('\n');
+            fs.writeFileSync("player.txt", delect);
+
+            //var filtArr = names.slice(0);
+           //console.log('...'+filtArr);
+           // nameArr.push(postData);
+           delectData = '';
+           // posts = nameArr.join('\n');
+
+            
+          
+        });
+   
+        const news = fs.readFileSync("player.txt",'utf8').split('\n');
+       
+        for(const name of news){
+            replace += '<li>' + name +'</li>\n';
+        
+        }     
+
+        const result = playerList.replace('PLAYERLIST', replace);
+
+        return res.end(result);
     }
    
 });
