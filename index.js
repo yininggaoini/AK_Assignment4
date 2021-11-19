@@ -2,7 +2,6 @@ const http = require("http");
 const querystring = require('querystring');
 const fs = require('fs');
 
-
 var nameArr = [];
 var posts;
 
@@ -40,10 +39,10 @@ var playerList = `<html>
     <ul>
         PLAYERLIST
     </ul>
+    <p> PS: Bitte nochmal Button clicken, nachdem Sie es wirklich loeschen wollen.</p>
     </body></html>`;
     
 const server = http.createServer((req,res) => {
-
 
     const methode = req.method;
     const thisUrl = req.url;
@@ -51,15 +50,11 @@ const server = http.createServer((req,res) => {
     res.statusCode = 200;
     res.setHeader = ("Content-Type","text/html");
 
- 
-
     if( path === '/'){
         return  res.end(welcomepage);
     }
 
-
-    if(path === '/create-player'){
-        
+    if(path === '/create-player'){       
         var postData = '';
 
         req.on('data',chunks => {
@@ -68,7 +63,7 @@ const server = http.createServer((req,res) => {
             if(postData.indexOf('playerName='&&'=')!=-1){
                 postData = postData.replace('playerName=','');
                 postData = postData.replace('+',' ');
-                // console.log('After replace:' +postData);
+                console.log(postData);
             }
            nameArr.push(postData);
            postData = '';
@@ -76,13 +71,9 @@ const server = http.createServer((req,res) => {
         });
 
         req.on('end',function(){
-
-            //console.log('...' + posts);
             fs.writeFileSync("player.txt", posts);
             res.end(creatplayer);
         });
-
-
     }
 
     if( path === '/player'){
@@ -93,50 +84,32 @@ const server = http.createServer((req,res) => {
 
         req.on('data',chunks => {
             delectData += chunks.toString();
-            console.log('Before replace:'+ delectData);
-
             if(delectData.indexOf('delectName='&&'=')!=-1){
                 delectData = delectData.replace('delectName=','');
-                delectData = delectData.replace('+',' ');
-                console.log('After replace:' +delectData);
-            }
-
-            
+                delectData = delectData.replace('+',' ');               
+            }           
         });
 
         req.on('end',function(){
-
             names.map((val, i)=>{
                 for(let len=0;len<names.length;len++){
                     if(val === delectData){
                         names.splice(i,1);
                         console.log(names);
                     }
-                }
-            
+                }            
             });
             delect = names.join('\n');
             fs.writeFileSync("player.txt", delect);
-
-            //var filtArr = names.slice(0);
-           //console.log('...'+filtArr);
-           // nameArr.push(postData);
-           delectData = '';
-           // posts = nameArr.join('\n');
-
-            
+            delectData = '';
           
         });
    
-        const news = fs.readFileSync("player.txt",'utf8').split('\n');
-       
+        const news = fs.readFileSync("player.txt",'utf8').split('\n');     
         for(const name of news){
-            replace += '<li>' + name +'</li>\n';
-        
+            replace += '<li>' + name +'</li>\n';      
         }     
-
         const result = playerList.replace('PLAYERLIST', replace);
-
         return res.end(result);
     }
    
